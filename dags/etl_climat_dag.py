@@ -1,7 +1,7 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime
-
+from airflow.models.variable import Variable
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -10,7 +10,8 @@ from scripts.transform import clean_weather_data
 from scripts.load import save_to_csv
 
 CITY = "Paris"
-API_KEY = "3308c283529aa761fed27655f2ccbea5"
+API_KEY = Variable.get("API_KEY_climat_tourisme")
+## API_KEY = "{{ var.value.API_KEY_climat_tourisme }}"
 
 with DAG("etl_climat_dag", start_date=datetime(2024, 1, 1), schedule="@daily", catchup=False) as dag:
 
