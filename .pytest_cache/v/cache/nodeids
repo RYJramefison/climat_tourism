@@ -1,0 +1,5 @@
+[
+  "scripts/tests/test_extract.py::test_get_city_coordinates",
+  "scripts/tests/test_load.py::test_save_csv",
+  "scripts/tests/test_transform.py::test_score"
+]

@@ -9,7 +9,7 @@ from scripts.extract import get_city_coordinates, get_weather_forecast
 from scripts.transform import clean_weather_data
 from scripts.load import save_to_csv
 
-CITY = "Paris"
+CITY = "Antananarivo"
 API_KEY = Variable.get("API_KEY_climat_tourisme")
 ## API_KEY = "{{ var.value.API_KEY_climat_tourisme }}"
 
@@ -30,7 +30,7 @@ with DAG("etl_climat_dag", start_date=datetime(2024, 1, 1), schedule="@daily", c
     def load():
         raw = get_weather_forecast(CITY, API_KEY)
         df = clean_weather_data(raw)
-        save_to_csv(df)
+        save_to_csv(df,"airflow/dags/climat_tourisme/data/weather_"+CITY+".csv")
 
     t1 = PythonOperator(task_id="extract_city_coords", python_callable=extract_coords)
     t2 = PythonOperator(task_id="extract_weather_data", python_callable=extract_weather)

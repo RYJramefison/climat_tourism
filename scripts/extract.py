@@ -1,4 +1,6 @@
 import requests
+import pandas as pd
+from meteostat import Point, Daily
 
 # APIs OpenWeather
 def get_city_coordinates(city, api_key):
@@ -14,4 +16,20 @@ def get_weather_forecast(city, api_key):
     return response.json()
 
 
+# Récupération historique avec Meteostat
+def get_historical_weather_meteostat(city, start, end):
+    from geopy.geocoders import Nominatim
+    geolocator = Nominatim(user_agent="weather_etl")
+    location = geolocator.geocode(city, timeout=10)
+    if not location:
+        raise ValueError("Ville non trouvée")
+    
+    point = Point(location.latitude, location.longitude)
+    data = Daily(point, start, end)
+    df = data.fetch()
+    df.reset_index(inplace=True)
+    df["date"] = df["time"].dt.date
+    df = df[["date", "tavg", "wspd", "prcp"]]  # moyenne T, vitesse vent, précipitations
+    df.columns = ["date", "temp", "wind", "rain"]
+    return df
 
