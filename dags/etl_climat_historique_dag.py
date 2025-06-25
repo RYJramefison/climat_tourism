@@ -11,8 +11,8 @@ from scripts.transform import clean_weather_data_meteostat
 from scripts.load import save_to_csv
 
 CITY = "Antananarivo"
-START_DATE = datetime(2024, 11, 1)
-END_DATE = datetime(2024, 12, 31)
+START_DATE = datetime(2025, 3, 1)
+END_DATE = datetime(2025, 4, 1)
 
 with DAG("etl_climat_historique_dag", start_date=datetime(2024, 1, 1), schedule="@once", catchup=False) as dag:
 
