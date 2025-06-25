@@ -110,4 +110,12 @@ def clean_weather_data_meteostat(df):
             })
 
     df_3h = pd.DataFrame(rows)
-    return df_3h
+        # Regroupement final par date (moyenne ou somme selon l'indicateur)
+    df_daily = df_3h.groupby("date").agg({
+        "temp": "mean",
+        "wind": "mean",
+        "rain": "sum",
+        "score": "mean"
+    }).reset_index()
+
+    return df_daily
