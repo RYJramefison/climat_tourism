@@ -10,26 +10,40 @@ from scripts.extract import get_historical_weather_meteostat
 from scripts.transform import clean_weather_data_meteostat
 from scripts.load import save_to_csv
 
-CITY = "Antananarivo"
+CITIES = ["Antananarivo", "Paris", "Tokyo"]
 START_DATE = datetime(2025, 3, 1)
 END_DATE = datetime(2025, 4, 1)
 
 with DAG("etl_climat_historique_dag", start_date=datetime(2024, 1, 1), schedule="@once", catchup=False) as dag:
+    previous_last_task = None
 
-    def extract():
-        return get_historical_weather_meteostat(CITY, START_DATE, END_DATE)
+    for CITY in CITIES:
+        def extract(CITY):
+            def task():
+                return get_historical_weather_meteostat(CITY, START_DATE, END_DATE)
+            return task
 
-    def transform():
-        df = get_historical_weather_meteostat(CITY, START_DATE, END_DATE)
-        return clean_weather_data_meteostat(df)
+        def transform(CITY):
+            def task():
+                df = get_historical_weather_meteostat(CITY, START_DATE, END_DATE)
+                return clean_weather_data_meteostat(df)
+            return task
 
-    def load():
-        df = get_historical_weather_meteostat(CITY, START_DATE, END_DATE)
-        df_clean = clean_weather_data_meteostat(df)
-        save_to_csv(df_clean, f"airflow/dags/climat_tourisme/data/weather_historical_{CITY}.csv")
+        def load(CITY):
+            def task():
+                df = get_historical_weather_meteostat(CITY, START_DATE, END_DATE)
+                df_clean = clean_weather_data_meteostat(df)
+                save_to_csv(df_clean, f"airflow/dags/climat_tourisme/data/weather_historical_{CITY}.csv")
+            return task
 
-    t1 = PythonOperator(task_id="extract_historical_weather", python_callable=extract)
-    t2 = PythonOperator(task_id="transform_historical_weather", python_callable=transform)
-    t3 = PythonOperator(task_id="load_historical_weather", python_callable=load)
+        t1 = PythonOperator(task_id=f"extract_historical_weather_{CITY.lower()}", python_callable=extract(CITY))
+        t2 = PythonOperator(task_id=f"transform_historical_weather_{CITY.lower()}", python_callable=transform(CITY))
+        t3 = PythonOperator(task_id=f"load_historical_weather_{CITY.lower()}", python_callable=load(CITY))
 
-    t1 >> t2 >> t3
+        t1 >> t2 >> t3
+
+
+        if previous_last_task:
+            previous_last_task >> t1  # la dernière tâche précédente vers le t1 de cette ville
+
+            previous_last_task = t3 
