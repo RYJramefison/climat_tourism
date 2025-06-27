@@ -4,12 +4,19 @@ from datetime import datetime
 from airflow.models.variable import Variable
 import sys
 import os
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+current_dir = os.path.dirname(__file__)
+sys.path.append(current_dir) 
+
 from scripts.extract import get_city_coordinates, get_weather_forecast
 from scripts.transform import clean_weather_data
 from scripts.load import save_to_csv
+from etl_climat_master_dag import CITIES_master
 
-CITIES = ["Antananarivo", "Paris", "Tokyo"]
+CITIES = CITIES_master
+# CITIES = ["Antananarivo", "Paris", "Tokyo"]
 API_KEY = Variable.get("API_KEY_climat_tourisme")
 ## API_KEY = "{{ var.value.API_KEY_climat_tourisme }}"
 

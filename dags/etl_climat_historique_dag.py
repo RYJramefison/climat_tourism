@@ -6,12 +6,16 @@ import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+current_dir = os.path.dirname(__file__)
+sys.path.append(current_dir) 
+
 from scripts.extract import get_historical_weather_meteostat
 from scripts.transform import clean_weather_data_meteostat
 from scripts.load import save_to_csv
 from scripts.aggregate import aggregate_scores_by_month
+from etl_climat_master_dag import CITIES_master
 
-CITIES = ["Antananarivo", "Paris", "Tokyo"]
+CITIES = CITIES_master
 START_DATE = datetime(2025, 3, 1)
 END_DATE = datetime(2025, 4, 1)
 
