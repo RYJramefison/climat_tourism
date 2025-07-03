@@ -20,7 +20,7 @@ def clean_weather_data(weather_data):
         "rain": "sum",
         "score": "mean"  # score moyen sur 20
     }).reset_index()
-    return df
+    return round(df)
 
 # Score météo sur 20 pour données actuelles
 def calculate_score(temp, rain, wind):
@@ -30,26 +30,37 @@ def calculate_score(temp, rain, wind):
     if 22 <= temp <= 28:
         score += 10
     elif 20 <= temp < 22 or 28 < temp <= 30:
-        score += 7
-    elif 18 <= temp < 20 or 30 < temp <= 32:
-        score += 5
+        score += 8
+    elif 17 <= temp < 20 or 30 < temp <= 33:
+        score += 6
+    elif 11 <= temp < 17 or 33 < temp <= 35:
+        score += 4
+    else: 
+        score += 2
 
     # Pluie (max 5 points)
     if rain == 0:
-        score += 5
+            score += 5
     elif rain < 2:
         score += 3
     elif rain < 5:
+        score += 2
+    elif rain < 10:
         score += 1
-
+    else: 
+        score += 0
     # Vent (max 5 points)
     if wind < 2:
         score += 5
     elif wind < 4:
         score += 3
     elif wind < 6:
+        score += 2
+    elif wind < 10:
         score += 1
-
+    else:   
+        score += 0
+    
     return min(score, 20)  # Cap à 20
 
 # Score météo sur 20 pour données historiques
@@ -60,9 +71,13 @@ def calculate_score_historique(temp, rain, wind):
         if 22 <= temp <= 28:
             score += 10
         elif 20 <= temp < 22 or 28 < temp <= 30:
-            score += 7
+            score += 8
         elif 18 <= temp < 20 or 30 < temp <= 32:
-            score += 5
+            score += 6
+        elif 11 <= temp < 18 or 32 < temp <= 35:
+            score += 4
+        else: 
+            score += 2
 
     if pd.notna(rain):
         if rain == 0:
@@ -70,7 +85,11 @@ def calculate_score_historique(temp, rain, wind):
         elif rain < 2:
             score += 3
         elif rain < 5:
+            score += 2
+        elif rain < 10:
             score += 1
+        else: 
+            score += 0
 
     if pd.notna(wind):
         if wind < 2:
@@ -78,7 +97,11 @@ def calculate_score_historique(temp, rain, wind):
         elif wind < 4:
             score += 3
         elif wind < 6:
+            score += 2
+        elif wind < 10:
             score += 1
+        else:   
+            score += 0
 
     return min(score, 20)
 
@@ -118,4 +141,4 @@ def clean_weather_data_meteostat(df):
         "score": "mean"
     }).reset_index()
 
-    return df_daily
+    return round(df_daily)

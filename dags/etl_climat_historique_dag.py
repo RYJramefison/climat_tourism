@@ -16,8 +16,8 @@ from scripts.aggregate import aggregate_scores_by_month
 from etl_climat_master_dag import CITIES_master
 
 CITIES = CITIES_master
-START_DATE = datetime(2025, 3, 1)
-END_DATE = datetime(2025, 4, 1)
+START_DATE = datetime(2025, 5, 25)
+END_DATE = datetime.now()
 
 with DAG("etl_climat_historique_dag", start_date=datetime(2024, 1, 1), schedule="@once", catchup=False) as dag:
     previous_last_task = None
