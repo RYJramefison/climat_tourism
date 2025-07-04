@@ -170,6 +170,9 @@ def transform_to_star(data_dir="airflow/dags/climat_tourisme/data"):
         df['date_id'] = pd.to_datetime(df['date']).dt.strftime('%Y%m%d').astype(int)
         df["ville_id"] = ville_id
         
+        if 'date' in df.columns:
+            df = df.drop(columns=['date'])
+        
         columns = ["date_id", "ville_id"] + [col for col in df.columns if col not in ["date_id", "ville_id"]]
         df = df[columns]
         
@@ -178,7 +181,7 @@ def transform_to_star(data_dir="airflow/dags/climat_tourisme/data"):
     df_fact.to_csv(os.path.join(output_dir, "fact_meteo.csv"), index=False)
 
     # --- 3) Crée la dimension date ---
-    all_dates = pd.to_datetime(df_fact["date"].unique())
+    all_dates = pd.to_datetime(df_fact["date_id"].unique(), format="%Y%m%d")
     dim_date_rows = []
     for dt in all_dates:
         dim_date_rows.append({
