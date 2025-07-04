@@ -7,6 +7,7 @@ import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from scripts.combine import combine_historical_and_recent
+from scripts.transform import transform_to_star
 
 CITIES_master = ["Antananarivo", "Paris"]
 
@@ -39,6 +40,7 @@ with DAG(
         wait_for_completion=True
     )
 
+    combine_tasks = []
     # ✅ Chaque ville sera fusionnée après l'exécution des deux DAGs
     for CITY in CITIES_master:
         combine_task = PythonOperator(
@@ -46,3 +48,11 @@ with DAG(
             python_callable=make_combine_task(CITY)
         )
         [trigger_recent, trigger_historique] >> combine_task
+        combine_tasks.append(combine_task)
+        
+    generate_star_task = PythonOperator(
+        task_id="generate_star_schema",
+        python_callable=transform_to_star
+    )
+
+    combine_tasks >> generate_star_task

@@ -19,10 +19,16 @@ CITIES = CITIES_master
 START_DATE = datetime(2025, 5, 25)
 END_DATE = datetime.now()
 
-with DAG("etl_climat_historique_dag", start_date=datetime(2024, 1, 1), schedule="@once", catchup=False) as dag:
+with DAG("etl_climat_historique_dag", 
+        start_date=datetime(2024, 1, 1), 
+        schedule="@once", 
+        catchup=False
+    ) as dag:
+    
     previous_last_task = None
 
     for CITY in CITIES:
+        
         def extract(CITY):
             def task():
                 return get_historical_weather_meteostat(CITY, START_DATE, END_DATE)

@@ -20,10 +20,16 @@ CITIES = CITIES_master
 API_KEY = Variable.get("API_KEY_climat_tourisme")
 ## API_KEY = "{{ var.value.API_KEY_climat_tourisme }}"
 
-with DAG("etl_climat_dag", start_date=datetime(2024, 1, 1), schedule="@daily", catchup=False) as dag:
+with DAG("etl_climat_dag",
+        start_date=datetime(2024, 1, 1),
+        schedule="@daily", 
+        catchup=False
+    ) as dag:
+    
     previous_last_task = None
     
     for CITY in CITIES:
+        
         def extract_coords(CITY):
             def task():
                 lat, lon = get_city_coordinates(CITY, API_KEY)

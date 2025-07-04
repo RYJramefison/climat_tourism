@@ -1,6 +1,7 @@
 
 import pandas as pd
 from datetime import timedelta
+import os
 
 # Traitement des données actuelles et prévisions sur 5 jours
 def clean_weather_data(weather_data):
@@ -142,3 +143,49 @@ def clean_weather_data_meteostat(df):
     }).reset_index()
 
     return round(df_daily)
+
+def transform_to_star(data_dir="airflow/dags/climat_tourisme/data"):
+    """
+    Construit dim_ville.csv, dim_date.csv et fact_meteo.csv
+    à partir des fichiers weather_combined_<ville>.csv
+    """
+    output_dir = os.path.join(data_dir, "star_schema")
+    os.makedirs(output_dir, exist_ok=True)
+
+    # --- 1) Crée la dimension ville ---
+    villes = []
+    files = [f for f in os.listdir(data_dir) if f.startswith("weather_combined_")]
+    for i, file in enumerate(files, start=1):
+        ville_nom = file.replace("weather_combined_", "").replace(".csv", "")
+        villes.append({"ville_id": i, "ville_nom": ville_nom})
+    df_dim_ville = pd.DataFrame(villes)
+    df_dim_ville.to_csv(os.path.join(output_dir, "dim_ville.csv"), index=False)
+
+    # --- 2) Crée la fact table ---
+    fact_rows = []
+    for i, file in enumerate(files, start=1):
+        ville_id = i
+        df = pd.read_csv(os.path.join(data_dir, file))
+        df["ville_id"] = ville_id
+        fact_rows.append(df)
+    df_fact = pd.concat(fact_rows, ignore_index=True)
+    df_fact.to_csv(os.path.join(output_dir, "fact_meteo.csv"), index=False)
+
+    # --- 3) Crée la dimension date ---
+    all_dates = pd.to_datetime(df_fact["date"].unique())
+    dim_date_rows = []
+    for dt in all_dates:
+        dim_date_rows.append({
+            "date_id": dt.strftime("%Y%m%d"),
+            "date": dt.strftime("%Y-%m-%d"),
+            "jour": dt.day,
+            "mois": dt.month,
+            "annee": dt.year,
+            "jour_semaine": dt.strftime("%A"),
+            "semaine_num": dt.isocalendar()[1]
+        })
+    df_dim_date = pd.DataFrame(dim_date_rows)
+    df_dim_date.to_csv(os.path.join(output_dir, "dim_date.csv"), index=False)
+
+    print(f"[✓] Schéma étoile généré : {output_dir}")
+    return output_dir
