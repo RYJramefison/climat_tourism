@@ -21,7 +21,14 @@ def clean_weather_data(weather_data):
         "Rain": "sum",
         "Score": "mean"  # score moyen sur 20
     }).reset_index()
-    return round(df)
+    
+    df = df.round(1)
+    df["Temperature"] = df["Temperature"].round(0).astype(int)
+    df["Wind_Speed"] = df["Wind_Speed"].round(0).astype(int)
+    df["Rain"] = df["Rain"].round(0).astype(int)
+    df["Score"] = df["Score"].round(0).astype(int)
+    
+    return df
 
 # Score météo sur 20 pour données actuelles
 def calculate_score(temp, rain, wind):
@@ -141,8 +148,13 @@ def clean_weather_data_meteostat(df):
         "Rain": "sum",
         "Score": "mean"
     }).reset_index()
+    
+    df_daily["Temperature"] = df_daily["Temperature"].round(0).astype(int)
+    df_daily["Wind_Speed"] = df_daily["Wind_Speed"].round(0).astype(int)
+    df_daily["Rain"] = df_daily["Rain"].round(0).astype(int)
+    df_daily["Score"] = df_daily["Score"].round(0).astype(int)
 
-    return round(df_daily)
+    return df_daily
 
 
 def transform_to_star(data_dir="airflow/dags/climat_tourisme/data"):
@@ -180,6 +192,12 @@ def transform_to_star(data_dir="airflow/dags/climat_tourisme/data"):
         "rain": "Rain",
         "score": "Score"
         })
+        
+        df["Temperature"] = df["Temperature"].round(0).astype(int)
+        df["Wind_Speed"] = df["Wind_Speed"].round(0).astype(int)
+        df["Rain"] = df["Rain"].round(0).astype(int)
+        df["Score"] = df["Score"].round(0).astype(int)
+        
         columns = ["Date_Id", "City_Id"] + [col for col in df.columns if col not in ["Date_Id", "City_Id"]]
         df = df[columns]
         

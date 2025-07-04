@@ -39,7 +39,11 @@ def combine_historical_and_recent(city, data_dir="airflow/dags/climat_tourisme/d
         df_combined = pd.concat([df_hist, df_recent], ignore_index=True)
         df_combined = df_combined.sort_values("date").drop_duplicates(subset="date")
 
-        df_combined.to_csv(output_path, index=False)
+        for col in ["temp", "win", "rain", "score"]:
+            if col in df_combined.columns:
+                df_combined[col] = df_combined[col].round(0).astype(int)
+        
+        df_combined.to_csv(output_path, index=False, float_format="%.2f")
         print(f"[✓] Saved combined data: {output_path}")
 
     except Exception as e:
