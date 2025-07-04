@@ -12,14 +12,14 @@ def clean_weather_data(weather_data):
         rain = entry.get('rain', {}).get('3h', 0)
         date = entry['dt_txt'].split()[0]
         score = calculate_score(temp, rain, wind)
-        rows.append({"date": date, "temp": temp, "wind": wind, "rain": rain, "score": score})
+        rows.append({"Date": date, "Temperature": temp, "Wind_Speed": wind, "Rain": rain, "Score": score})
 
     df = pd.DataFrame(rows)
-    df = df.groupby("date").agg({
-        "temp": "mean",
-        "wind": "mean",
-        "rain": "sum",
-        "score": "mean"  # score moyen sur 20
+    df = df.groupby("Date").agg({
+        "Temperature": "mean",
+        "Wind_Speed": "mean",
+        "Rain": "sum",
+        "Score": "mean"  # score moyen sur 20
     }).reset_index()
     return round(df)
 
@@ -125,76 +125,83 @@ def clean_weather_data_meteostat(df):
 
             rows.append({
                 "datetime": dt,
-                "date": base_date.date(),
-                "heure": heure,
-                "temp": temp,
-                "wind": wind,
-                "rain": rain_3h,
-                "score": score
+                "Date": base_date.date(),
+                "Heure": heure,
+                "Temperature": temp,
+                "Wind_Speed": wind,
+                "Rain": rain_3h,
+                "Score": score
             })
 
     df_3h = pd.DataFrame(rows)
         # Regroupement final par date (moyenne ou somme selon l'indicateur)
-    df_daily = df_3h.groupby("date").agg({
-        "temp": "mean",
-        "wind": "mean",
-        "rain": "sum",
-        "score": "mean"
+    df_daily = df_3h.groupby("Date").agg({
+        "Temperature": "mean",
+        "Wind_Speed": "mean",
+        "Rain": "sum",
+        "Score": "mean"
     }).reset_index()
 
     return round(df_daily)
 
+
 def transform_to_star(data_dir="airflow/dags/climat_tourisme/data"):
     """
-    Construit dim_ville.csv, dim_date.csv et fact_meteo.csv
-    à partir des fichiers weather_combined_<ville>.csv
+    Construit city.csv, dim_date.csv et fact_meteo.csv
+    à partir des fichiers weather_combined_<city>.csv
     """
     output_dir = os.path.join(data_dir, "star_schema")
     os.makedirs(output_dir, exist_ok=True)
 
-    # --- 1) Crée la dimension ville ---
-    villes = []
+    # --- 1) Crée la dimension city ---
+    cities = []
     files = [f for f in os.listdir(data_dir) if f.startswith("weather_combined_")]
     for i, file in enumerate(files, start=1):
-        ville_nom = file.replace("weather_combined_", "").replace(".csv", "")
-        villes.append({"ville_id": i, "ville_nom": ville_nom})
-    df_dim_ville = pd.DataFrame(villes)
-    df_dim_ville.to_csv(os.path.join(output_dir, "dim_ville.csv"), index=False)
+        city_nom = file.replace("weather_combined_", "").replace(".csv", "")
+        cities.append({"City_Id": i, "City_Name": city_nom})
+    df_city = pd.DataFrame(cities)
+    df_city.to_csv(os.path.join(output_dir, "City.csv"), index=False)
 
     # --- 2) Crée la fact table ---
     fact_rows = []
     for i, file in enumerate(files, start=1):
-        ville_id = i
+        city_id = i
         df = pd.read_csv(os.path.join(data_dir, file))
         
-        df['date_id'] = pd.to_datetime(df['date']).dt.strftime('%Y%m%d').astype(int)
-        df["ville_id"] = ville_id
+        df['Date_Id'] = pd.to_datetime(df['date']).dt.strftime('%Y%m%d').astype(int)
+        df["City_Id"] = city_id
         
         if 'date' in df.columns:
             df = df.drop(columns=['date'])
         
-        columns = ["date_id", "ville_id"] + [col for col in df.columns if col not in ["date_id", "ville_id"]]
+        df = df.rename(columns={
+        "temp": "Temperature",
+        "wind": "Wind_Speed",
+        "rain": "Rain",
+        "score": "Score"
+        })
+        columns = ["Date_Id", "City_Id"] + [col for col in df.columns if col not in ["Date_Id", "City_Id"]]
         df = df[columns]
         
         fact_rows.append(df)
     df_fact = pd.concat(fact_rows, ignore_index=True)
-    df_fact.to_csv(os.path.join(output_dir, "fact_meteo.csv"), index=False)
+    df_fact.to_csv(os.path.join(output_dir, "Weather.csv"), index=False)
 
     # --- 3) Crée la dimension date ---
-    all_dates = pd.to_datetime(df_fact["date_id"].unique(), format="%Y%m%d")
+    all_dates = pd.to_datetime(df_fact["Date_Id"].unique(), format="%Y%m%d")
     dim_date_rows = []
     for dt in all_dates:
         dim_date_rows.append({
-            "date_id": dt.strftime("%Y%m%d"),
-            "date": dt.strftime("%Y-%m-%d"),
-            "jour": dt.day,
-            "mois": dt.month,
-            "annee": dt.year,
-            "jour_semaine": dt.strftime("%A"),
-            "semaine_num": dt.isocalendar()[1]
+            "Date_Id": dt.strftime("%Y%m%d"),
+            "Date": dt.strftime("%Y-%m-%d"),
+            "Day": dt.day,
+            "Month": dt.month,
+            "Year": dt.year,
+            "Day_Week": dt.strftime("%A"),
+            "Week_Number": dt.isocalendar()[1]
         })
     df_dim_date = pd.DataFrame(dim_date_rows)
-    df_dim_date.to_csv(os.path.join(output_dir, "dim_date.csv"), index=False)
+    df_dim_date.to_csv(os.path.join(output_dir, "Date.csv"), index=False)
 
     print(f"[✓] Schéma étoile généré : {output_dir}")
     return output_dir
