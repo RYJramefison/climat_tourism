@@ -166,7 +166,13 @@ def transform_to_star(data_dir="airflow/dags/climat_tourisme/data"):
     for i, file in enumerate(files, start=1):
         ville_id = i
         df = pd.read_csv(os.path.join(data_dir, file))
+        
+        df['date_id'] = pd.to_datetime(df['date']).dt.strftime('%Y%m%d').astype(int)
         df["ville_id"] = ville_id
+        
+        columns = ["date_id", "ville_id"] + [col for col in df.columns if col not in ["date_id", "ville_id"]]
+        df = df[columns]
+        
         fact_rows.append(df)
     df_fact = pd.concat(fact_rows, ignore_index=True)
     df_fact.to_csv(os.path.join(output_dir, "fact_meteo.csv"), index=False)
