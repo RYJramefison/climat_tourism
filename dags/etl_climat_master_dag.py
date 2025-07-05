@@ -30,7 +30,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from scripts.combine import combine_historical_and_recent
 from scripts.transform import transform_to_star
 
-CITIES_master = ["Antananarivo", "Paris"]
+CITIES_master = ["Antananarivo", "Paris", "Rome"]
 
 DATA_DIR = "airflow/dags/climat_tourisme/data"
 
@@ -60,7 +60,6 @@ with DAG(
     )
 
     combine_tasks = []
-    # Chaque ville sera fusionnée après l'exécution des deux DAGs
     for CITY in CITIES_master:
         combine_task = PythonOperator(
             task_id=f"combine_weather_{CITY.lower()}",

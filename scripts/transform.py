@@ -65,7 +65,6 @@ def clean_weather_data(weather_data):
 def calculate_score(temp, rain, wind):
     score = 0
 
-    # Température (max 10 points)
     if 22 <= temp <= 28:
         score += 10
     elif 20 <= temp < 22 or 28 < temp <= 30:
@@ -77,7 +76,6 @@ def calculate_score(temp, rain, wind):
     else: 
         score += 2
 
-    # Pluie (max 5 points)
     if rain == 0:
             score += 5
     elif rain < 2:
@@ -88,7 +86,7 @@ def calculate_score(temp, rain, wind):
         score += 1
     else: 
         score += 0
-    # Vent (max 5 points)
+
     if wind < 2:
         score += 5
     elif wind < 4:
@@ -172,7 +170,7 @@ def clean_weather_data_meteostat(df):
             })
 
     df_3h = pd.DataFrame(rows)
-        # Regroupement final par date (moyenne ou somme selon l'indicateur)
+        # Regroupement final par date 
     df_daily = df_3h.groupby("Date").agg({
         "Temperature": "mean",
         "Wind_Speed": "mean",

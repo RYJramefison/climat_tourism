@@ -32,7 +32,7 @@ from scripts.load import save_to_csv
 from etl_climat_master_dag import CITIES_master
 
 CITIES = CITIES_master
-START_DATE = datetime(2025, 5, 25)
+START_DATE = datetime(2024, 5, 25)
 END_DATE = datetime.now()
 
 with DAG("etl_climat_historique_dag", 
@@ -68,7 +68,7 @@ with DAG("etl_climat_historique_dag",
         t3 = PythonOperator(task_id=f"load_historical_weather_{CITY.lower()}", python_callable=load(CITY))
         t1 >> t2 >> t3 
 
-        # la dernière tâche précédente vers le t1 de cette ville
+        
         if previous_last_task:
             previous_last_task >> t1  
 

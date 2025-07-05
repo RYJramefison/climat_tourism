@@ -79,7 +79,6 @@ with DAG("etl_climat_dag",
 
         t1 >> t2 >> t3 >> t4
         
-        # la dernière tâche précédente vers le t1 de cette ville
         if previous_last_task:
             previous_last_task >> t1  
 
