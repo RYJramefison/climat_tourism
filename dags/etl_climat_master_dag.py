@@ -1,3 +1,24 @@
+"""
+===============================================================
+ DAG : etl_climat_master_dag
+---------------------------------------------------------------
+Ce DAG joue le rôle de pipeline maître :
+il orchestre et déclenche deux sous-DAGs :
+  - etl_climat_dag (météo actuelle + prévisions)
+  - etl_climat_historique_dag (météo historique)
+
+Ensuite, pour chaque ville de CITIES_master :
+  1 combine : fusionne les données historiques et récentes.
+  2 generate_star_schema : génère le schéma en étoile 
+      pour préparer l'analyse (Data Warehouse).
+
+Le DAG attend que les sous-DAGs soient terminés avant de lancer
+la combinaison puis la transformation finale.
+
+Planification : exécution quotidienne.
+===============================================================
+"""
+
 from airflow import DAG
 from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 from airflow.operators.python import PythonOperator
@@ -23,7 +44,7 @@ with DAG(
         start_date=datetime(2024, 1, 1),
         schedule="@daily",
         catchup=False,
-        max_active_runs=1,  # ✅ Ne permet qu'un seul run actif à la fois
+        max_active_runs=1,  
     ) as dag:
 
     trigger_recent = TriggerDagRunOperator(

@@ -1,17 +1,25 @@
+"""
+===============================================================
+Fonction : combine_historical_and_recent
+---------------------------------------------------------------
+Cette fonction combine les données météo historiques et récentes 
+pour une ville donnée.
+
+Processus :
+  - Lecture des fichiers CSV historiques et récents.
+  - Vérification des fichiers et conversion des dates.
+  - Fusion des données, tri et suppression des doublons.
+  - Arrondi des colonnes numériques.
+  - Sauvegarde du fichier combiné.
+
+===============================================================
+"""
+
 import pandas as pd
 import os
 
 def combine_historical_and_recent(city, data_dir="airflow/dags/climat_tourisme/data"):
-    """
-    Combine historical and recent weather data for a given city.
-
-    Parameters:
-    - city (str): Name of the city
-    - data_dir (str): Path to the directory where the CSVs are located
-
-    Output:
-    - Saves a combined CSV file named 'weather_combined_<city>.csv'
-    """
+    
     hist_path = os.path.join(data_dir, f"weather_historical_{city}.csv")
     recent_path = os.path.join(data_dir, f"weather_{city}.csv")
     output_path = os.path.join(data_dir, f"weather_combined_{city}.csv")

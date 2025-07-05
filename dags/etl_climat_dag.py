@@ -1,3 +1,23 @@
+"""
+===============================================================
+ DAG : etl_climat_dag
+---------------------------------------------------------------
+Ce DAG exécute chaque jour un pipeline ETL pour chaque ville
+définie dans CITIES :
+
+  1 extract_coords : récupère les coordonnées de la ville.
+  2 extract_weather : récupère les prévisions météo brutes.
+  3 transform : nettoie et transforme les données météo.
+  4 load : sauvegarde les données nettoyées au format CSV.
+
+Le pipeline traite les données météo actuelles (current)
+et les prévisions sur 5 jours.
+
+Les tâches sont chaînées pour chaque ville et les villes
+sont traitées les unes après les autres.
+===============================================================
+"""
+
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime
@@ -6,14 +26,13 @@ import sys
 import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
-current_dir = os.path.dirname(__file__)
-sys.path.append(current_dir) 
+sys.path.append(os.path.dirname(__file__)) 
 
 from scripts.extract import get_city_coordinates, get_weather_forecast
 from scripts.transform import clean_weather_data
 from scripts.load import save_to_csv
 from etl_climat_master_dag import CITIES_master
+
 
 CITIES = CITIES_master
 API_KEY = Variable.get("API_KEY_climat_tourisme")

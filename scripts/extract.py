@@ -1,3 +1,30 @@
+"""
+===============================================================
+extract.py
+
+Module de fonctions pour la récupération des données météo.
+
+Fonctions principales :
+
+1 get_city_coordinates(city, api_key)
+    - Récupère les coordonnées géographiques (latitude, longitude)
+      d'une ville via l'API OpenWeather.
+    - Retour : tuple (lat: float, lon: float)
+
+2 get_weather_forecast(city, api_key)
+    - Récupère les prévisions météo sur 5 jours par tranches de 3 heures
+      via l'API OpenWeather.
+    - Retour : dict JSON brut des prévisions météo.
+
+3 get_historical_weather_meteostat(city, start, end)
+    - Récupère les données météo historiques pour une ville entre
+      deux dates via la bibliothèque Meteostat.
+    - Retour : pandas.DataFrame avec colonnes ['date', 'temp', 'wind', 'rain']
+      (température moyenne, vitesse du vent, précipitations).
+
+===============================================================
+"""
+
 import requests
 import pandas as pd
 from meteostat import Point, Daily

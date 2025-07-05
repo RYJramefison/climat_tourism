@@ -1,3 +1,32 @@
+"""
+===============================================================
+transform.py
+
+Fonctions pour nettoyer et transformer les données météo
+(actuelles, prévisions et historiques).
+
+Principales fonctions :
+
+1 clean_weather_data(weather_data)
+   - Nettoie et agrège les données météo OpenWeather.
+   - Retour : DataFrame journalier avec température, vent, pluie, score.
+
+2 calculate_score(temp, rain, wind)
+   - Calcule un score météo sur 20 pour données actuelles/prévisions.
+
+3 calculate_score_historique(temp, rain, wind)
+   - Calcule un score météo sur 20 pour données historiques.
+
+4 clean_weather_data_meteostat(df)
+   - Transforme et agrège les données Meteostat historiques.
+   - Retour : DataFrame journalier nettoyé.
+
+5 transform_to_star(data_dir)
+   - Crée un schéma en étoile (City, Date, Weather) pour Data Warehouse.
+   - Retour : dossier contenant les fichiers générés.
+
+===============================================================
+"""
 
 import pandas as pd
 from datetime import timedelta
@@ -185,13 +214,6 @@ def transform_to_star(data_dir="airflow/dags/climat_tourisme/data"):
         
         if 'Date' in df.columns:
             df = df.drop(columns=['Date'])
-        
-        # df = df.rename(columns={
-        # "temp": "Temperature",
-        # "wind": "Wind_Speed",
-        # "rain": "Rain",
-        # "score": "Score"
-        # })
         
         df["Temperature"] = df["Temperature"].round(0).astype(int)
         df["Wind_Speed"] = df["Wind_Speed"].round(0).astype(int)

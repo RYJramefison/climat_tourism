@@ -1,3 +1,22 @@
+"""
+===============================================================
+ DAG : etl_climat_historique_dag
+---------------------------------------------------------------
+Ce DAG exécute une seule fois un pipeline ETL pour chaque ville
+définie dans CITIES :
+
+  1 extract : récupère les données météo historiques 
+    depuis Meteostat pour la période START_DATE à END_DATE.
+  2 transform : nettoie et transforme les données récupérées.
+  3 load : sauvegarde les données nettoyées au format CSV.
+
+Ce pipeline traite uniquement des données historiques.
+
+Les tâches sont chaînées pour chaque ville et les villes
+sont traitées les unes après les autres.
+===============================================================
+"""
+
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime
@@ -5,14 +24,11 @@ import sys
 import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
-current_dir = os.path.dirname(__file__)
-sys.path.append(current_dir) 
+sys.path.append(os.path.dirname(__file__)) 
 
 from scripts.extract import get_historical_weather_meteostat
 from scripts.transform import clean_weather_data_meteostat
 from scripts.load import save_to_csv
-# from scripts.aggregate import aggregate_scores_by_month
 from etl_climat_master_dag import CITIES_master
 
 CITIES = CITIES_master
@@ -46,17 +62,10 @@ with DAG("etl_climat_historique_dag",
                 df_clean = clean_weather_data_meteostat(df)
                 save_to_csv(df_clean, f"airflow/dags/climat_tourisme/data/weather_historical_{CITY}.csv")
             return task
-        
-        # def aggregate(CITY):
-        #     def task():
-        #         aggregate_scores_by_month([CITY])
-        #     return task
 
         t1 = PythonOperator(task_id=f"extract_historical_weather_{CITY.lower()}", python_callable=extract(CITY))
         t2 = PythonOperator(task_id=f"transform_historical_weather_{CITY.lower()}", python_callable=transform(CITY))
         t3 = PythonOperator(task_id=f"load_historical_weather_{CITY.lower()}", python_callable=load(CITY))
-        # t4 = PythonOperator(task_id=f"aggregate_monthly_score_{CITY.lower()}", python_callable=aggregate(CITY))
-        # t1 >> t2 >> t3 >> t4
         t1 >> t2 >> t3 
 
         # la dernière tâche précédente vers le t1 de cette ville
@@ -64,4 +73,3 @@ with DAG("etl_climat_historique_dag",
             previous_last_task >> t1  
 
             previous_last_task = t3 
-            # previous_last_task = t4 
