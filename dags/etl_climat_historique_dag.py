@@ -32,7 +32,7 @@ from scripts.load import save_to_csv
 from etl_climat_master_dag import CITIES_master
 
 CITIES = CITIES_master
-START_DATE = datetime(2024, 5, 25)
+START_DATE = datetime(2025, 4, 25)
 END_DATE = datetime.now()
 
 with DAG("etl_climat_historique_dag", 
