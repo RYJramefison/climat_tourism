@@ -19,7 +19,7 @@ def clean_weather_data(weather_data):
         "Temperature": "mean",
         "Wind_Speed": "mean",
         "Rain": "sum",
-        "Score": "mean"  # score moyen sur 20
+        "Score": "mean"
     }).reset_index()
     
     df = df.round(1)
@@ -30,7 +30,7 @@ def clean_weather_data(weather_data):
     
     return df
 
-# Score météo sur 20 pour données actuelles
+# Score météo sur 20 pour données actuelles et prévisions 5 jours 
 def calculate_score(temp, rain, wind):
     score = 0
 
@@ -159,13 +159,13 @@ def clean_weather_data_meteostat(df):
 
 def transform_to_star(data_dir="airflow/dags/climat_tourisme/data"):
     """
-    Construit city.csv, dim_date.csv et fact_meteo.csv
+    Construit les fichier City.csv, Date.csv et Meteo.csv
     à partir des fichiers weather_combined_<city>.csv
     """
     output_dir = os.path.join(data_dir, "star_schema")
     os.makedirs(output_dir, exist_ok=True)
 
-    # --- 1) Crée la dimension city ---
+    # --- 1) Création de la table dimension City ---
     cities = []
     files = [f for f in os.listdir(data_dir) if f.startswith("weather_combined_")]
     for i, file in enumerate(files, start=1):
@@ -174,24 +174,24 @@ def transform_to_star(data_dir="airflow/dags/climat_tourisme/data"):
     df_city = pd.DataFrame(cities)
     df_city.to_csv(os.path.join(output_dir, "City.csv"), index=False)
 
-    # --- 2) Crée la fact table ---
+    # --- 2) Création de la table fait Weather ---
     fact_rows = []
     for i, file in enumerate(files, start=1):
         city_id = i
         df = pd.read_csv(os.path.join(data_dir, file))
         
-        df['Date_Id'] = pd.to_datetime(df['date']).dt.strftime('%Y%m%d').astype(int)
+        df['Date_Id'] = pd.to_datetime(df['Date']).dt.strftime('%Y%m%d').astype(int)
         df["City_Id"] = city_id
         
-        if 'date' in df.columns:
-            df = df.drop(columns=['date'])
+        if 'Date' in df.columns:
+            df = df.drop(columns=['Date'])
         
-        df = df.rename(columns={
-        "temp": "Temperature",
-        "wind": "Wind_Speed",
-        "rain": "Rain",
-        "score": "Score"
-        })
+        # df = df.rename(columns={
+        # "temp": "Temperature",
+        # "wind": "Wind_Speed",
+        # "rain": "Rain",
+        # "score": "Score"
+        # })
         
         df["Temperature"] = df["Temperature"].round(0).astype(int)
         df["Wind_Speed"] = df["Wind_Speed"].round(0).astype(int)
@@ -205,7 +205,7 @@ def transform_to_star(data_dir="airflow/dags/climat_tourisme/data"):
     df_fact = pd.concat(fact_rows, ignore_index=True)
     df_fact.to_csv(os.path.join(output_dir, "Weather.csv"), index=False)
 
-    # --- 3) Crée la dimension date ---
+    # --- 3) Création de la table dimension Date ---
     all_dates = pd.to_datetime(df_fact["Date_Id"].unique(), format="%Y%m%d")
     dim_date_rows = []
     for dt in all_dates:

@@ -32,4 +32,3 @@ def get_historical_weather_meteostat(city, start, end):
     df = df[["date", "tavg", "wspd", "prcp"]]  # moyenne T, vitesse vent, précipitations
     df.columns = ["date", "temp", "wind", "rain"]
     return df
-

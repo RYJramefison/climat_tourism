@@ -30,20 +30,20 @@ def combine_historical_and_recent(city, data_dir="airflow/dags/climat_tourisme/d
 
         # Assure cohérence des colonnes et formats
         for df in [df_hist, df_recent]:
-            if "date" in df.columns:
-                df["date"] = pd.to_datetime(df["date"])
+            if "Date" in df.columns:
+                df["Date"] = pd.to_datetime(df["Date"])
             else:
-                raise ValueError("Missing 'date' column in one of the files.")
+                raise ValueError("Missing 'Date' column in one of the files.")
 
         # Combine les deux fichiers sans doublons
         df_combined = pd.concat([df_hist, df_recent], ignore_index=True)
-        df_combined = df_combined.sort_values("date").drop_duplicates(subset="date")
+        df_combined = df_combined.sort_values("Date").drop_duplicates(subset="Date")
 
-        for col in ["temp", "win", "rain", "score"]:
+        for col in ["Temperature", "Wind_Speed", "Rain", "Score"]:
             if col in df_combined.columns:
                 df_combined[col] = df_combined[col].round(0).astype(int)
         
-        df_combined.to_csv(output_path, index=False, float_format="%.2f")
+        df_combined.to_csv(output_path, index=False)
         print(f"[✓] Saved combined data: {output_path}")
 
     except Exception as e:

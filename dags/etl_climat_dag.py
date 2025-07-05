@@ -16,9 +16,7 @@ from scripts.load import save_to_csv
 from etl_climat_master_dag import CITIES_master
 
 CITIES = CITIES_master
-# CITIES = ["Antananarivo", "Paris", "Tokyo"]
 API_KEY = Variable.get("API_KEY_climat_tourisme")
-## API_KEY = "{{ var.value.API_KEY_climat_tourisme }}"
 
 with DAG("etl_climat_dag",
         start_date=datetime(2024, 1, 1),
@@ -62,7 +60,8 @@ with DAG("etl_climat_dag",
 
         t1 >> t2 >> t3 >> t4
         
+        # la dernière tâche précédente vers le t1 de cette ville
         if previous_last_task:
-            previous_last_task >> t1  # la dernière tâche précédente vers le t1 de cette ville
+            previous_last_task >> t1  
 
         previous_last_task = t4 
