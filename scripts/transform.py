@@ -51,6 +51,8 @@ def clean_weather_data(weather_data):
         "Score": "mean"
     }).reset_index()
     
+    df["Rain"] = df["Rain"] * 100
+    
     df = df.round(1)
     df["Temperature"] = df["Temperature"].round(0).astype(int)
     df["Wind_Speed"] = df["Wind_Speed"].round(0).astype(int)
@@ -177,6 +179,8 @@ def clean_weather_data_meteostat(df):
         "Rain": "sum",
         "Score": "mean"
     }).reset_index()
+    
+    df_daily["Rain"] = df_daily["Rain"] * 100
     
     df_daily["Temperature"] = df_daily["Temperature"].round(0).astype(int)
     df_daily["Wind_Speed"] = df_daily["Wind_Speed"].round(0).astype(int)
